@@ -65,8 +65,9 @@ cpdef double _proj_elastic_all(double eta,
     cdef int n_features = w.shape[0]
     cdef int j
     for j in xrange(n_features):
-        w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
-                             delta)
+        if g_norms[j] != 0:
+            w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
+                                 delta)
 
 
 def _adagrad_fit(self,
@@ -105,7 +106,7 @@ def _adagrad_fit(self,
     cdef double* w = <double*>coef.data
 
     t = 1
-    for t in xrange(n_iter):
+    for it in xrange(n_iter):
 
         # Shuffle sample indices.
         # rng.shuffle(sindices)
@@ -120,8 +121,9 @@ def _adagrad_fit(self,
             # if t > 1:
             #     for jj in xrange(n_nz):
             #         j = indices[jj]
-            #         w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
-            #                              alpha1, alpha2, delta)
+            #         if g_norms[j] != 0:
+            #             w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
+            #                                  alpha1, alpha2, delta)
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
@@ -129,17 +131,20 @@ def _adagrad_fit(self,
             # A subgradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
+            for j in xrange(n_features):
+                g_norms[j] *= 2
+
             # Update g_sum and g_norms.
             if scale != 0:
                 for jj in xrange(n_nz):
                     j = indices[jj]
                     tmp = scale * data[jj]
                     g_sum[j] += tmp
-                    g_norms[j] += g_norms[j] + tmp * tmp
+                    g_norms[j] +=  tmp * tmp
 
             # Update w by naive implementation: very slow.
             for j in xrange(n_features):
-               w[j] = _proj_elastic(eta, t + 1, g_sum[j], g_norms[j], alpha1,
+               w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1,
                                     alpha2, delta)
 
             # Callback.
