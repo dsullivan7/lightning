@@ -107,7 +107,7 @@ def _adagrad_fit(self,
     for t in xrange(n_iter):
 
         # Shuffle sample indices.
-        rng.shuffle(sindices)
+        # rng.shuffle(sindices)
 
         for ii in xrange(n_samples):
             i = sindices[ii]
@@ -116,11 +116,11 @@ def _adagrad_fit(self,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             # Update w lazily.
-            if t > 1:
-                for jj in xrange(n_nz):
-                    j = indices[jj]
-                    w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
-                                         alpha1, alpha2, delta)
+            # if t > 1:
+            #     for jj in xrange(n_nz):
+            #         j = indices[jj]
+            #         w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
+            #                              alpha1, alpha2, delta)
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
@@ -137,9 +137,9 @@ def _adagrad_fit(self,
                     g_norms[j] += tmp * tmp
 
             # Update w by naive implementation: very slow.
-            # for j in xrange(n_features):
-            #    w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1,
-            #                         alpha2, delta)
+            for j in xrange(n_features):
+               w[j] = _proj_elastic(eta, t + 1, g_sum[j], g_norms[j], alpha1,
+                                    alpha2, delta)
 
             # Callback.
             if has_callback and t % n_calls == 0:
