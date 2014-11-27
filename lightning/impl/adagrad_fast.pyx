@@ -42,15 +42,16 @@ cdef double _proj_elastic(double eta,
 
     cdef double eta_t = eta * t
     cdef double denom = (delta + sqrt(g_norm) + eta_t * alpha2)
-    cdef double wj_new1 = eta_t * (-g_sum / t - alpha1) / denom
-    cdef double wj_new2 = eta_t * (-g_sum / t + alpha1) / denom
+    cdef double wj_new1 = - eta / denom * g_sum
+    # cdef double wj_new2 = eta_t * (-g_sum / t + alpha1) / denom
 
-    if wj_new1 > 0:
-        return wj_new1
-    elif wj_new2 < 0:
-        return wj_new2
-    else:
-        return 0
+    return wj_new1
+    # if wj_new1 > 0:
+    #     return wj_new1
+    # elif wj_new2 < 0:
+    #     return wj_new2
+    # else:
+    #     return 0
 
 
 cpdef double _proj_elastic_all(double eta,
@@ -134,7 +135,7 @@ def _adagrad_fit(self,
                     j = indices[jj]
                     tmp = scale * data[jj]
                     g_sum[j] += tmp
-                    g_norms[j] += tmp * tmp
+                    g_norms[j] += g_norms[j] + tmp * tmp
 
             # Update w by naive implementation: very slow.
             for j in xrange(n_features):
@@ -151,4 +152,4 @@ def _adagrad_fit(self,
 
 
     # Finalize.
-    _proj_elastic_all(eta, t - 1, g_sum, g_norms, alpha1, alpha2, delta, coef)
+    # _proj_elastic_all(eta, t - 1, g_sum, g_norms, alpha1, alpha2, delta, coef)
