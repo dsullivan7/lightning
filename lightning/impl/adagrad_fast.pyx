@@ -40,8 +40,8 @@ cdef double _proj_elastic(double eta,
                           double alpha2,
                           double delta):
 
-    cdef double eta_t = eta * t
-    cdef double denom = (delta + sqrt(g_norm) + eta_t * alpha2)
+    # cdef double eta_t = eta * t
+    cdef double denom = sqrt(g_norm)
     cdef double wj_new1 = - eta / denom * g_sum
     # cdef double wj_new2 = eta_t * (-g_sum / t + alpha1) / denom
 
@@ -131,8 +131,6 @@ def _adagrad_fit(self,
             # A subgradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
-            for j in xrange(n_features):
-                g_norms[j] *= 2
 
             # Update g_sum and g_norms.
             if scale != 0:
